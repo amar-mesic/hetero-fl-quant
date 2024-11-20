@@ -1,0 +1,5 @@
+name: dml
+
+dependencies:
+  - python=3.10.14
+  - numpy
