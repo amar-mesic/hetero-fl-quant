@@ -1,6 +1,15 @@
 import torch
+import torch.nn as nn
 
 
+# create utility function to provide us with an uninitialized model
+def create_model():
+    return nn.Sequential(
+    nn.Flatten(),
+    nn.Linear(28 * 28, 128),
+    nn.ReLU(),
+    nn.Linear(128, 10)
+)
 
 
 # Can this be simplified to only return a dictionary that is the average of client states?
@@ -15,3 +24,4 @@ def federated_averaging(global_model, client_states):
         )
     
     return averaged_state
+
