@@ -14,6 +14,7 @@ def create_model():
 
 # Can this be simplified to only return a dictionary that is the average of client states?
 def federated_averaging(global_model, client_states):
+    
     # Initialize a dictionary to store averaged weights
     averaged_state = global_model.state_dict()
     
