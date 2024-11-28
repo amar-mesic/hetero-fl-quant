@@ -9,8 +9,6 @@ def federated_averaging(global_model, client_states, setting="standard"):
     
     # Initialize a dictionary to store averaged weights
     averaged_state = global_model.state_dict()
-    model_size_bytes, model_size_mb = calculate_model_size(global_model)
-    print(f"Model size averaged_state: {model_size_bytes} bytes ({model_size_mb:.2f} MB)")
 
     for key in averaged_state:
         if any(substr in key for substr in ["activation_post_process", "fake_quant"]):

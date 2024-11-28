@@ -58,6 +58,7 @@ def dithered_quantize(weights, bitwidth=8, dither_scale=0.01):
 
 # 5) Kurtosis Regularization (KURE): approach adding regularization to increase robustness against quantization
 # Source: https://arxiv.org/abs/2206.10844
+
 def kurtosis_regularization(weights, target_kurtosis=1.8):
     mean = weights.mean()
     std = weights.std()
