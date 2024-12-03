@@ -16,9 +16,10 @@ def federated_averaging(global_model, client_states, setting="standard"):
 
         # Compute the average of the weights for each layer
         try:
-            if(setting == "standard"):
+            if(setting in ["standard", "kure", "mqat"]):
                 # Standard quantization
                 averaged_state[key] = torch.mean(torch.stack([client_state[key] for client_state in client_states]), dim=0)
+                
             elif setting == "scalar":
                 # Scalar quantization and averaging
                 quantized_updates = []
@@ -33,7 +34,6 @@ def federated_averaging(global_model, client_states, setting="standard"):
 
                 # Calculate average quantized weights
                 avg_quantized = torch.mean(torch.stack(quantized_updates), dim=0).to(torch.int8)  # Convert back to int8
-                #packed = (avg_quantized[::2] << 4) | avg_quantized[1::2]
 
                 # Use the average scale and zero-point for dequantization if needed
                 avg_scale = sum(scale_list) / len(scale_list)

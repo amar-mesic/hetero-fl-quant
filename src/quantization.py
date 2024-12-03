@@ -15,8 +15,6 @@ def scalar_quantize(weights, bitwidth=8):
     scale = (weights.max() - weights.min()) / (levels - 1)
     zero_point = -weights.min() / scale
     quantized = torch.round((weights / scale) + zero_point)
-    #print("quantized:", type(quantized))
-    #print("quantized:", quantized.numel() * quantized.element_size())
     return quantized, scale, zero_point
 
 def scalar_dequantize(quantized, scale, min_val):
@@ -64,3 +62,26 @@ def kurtosis_regularization(weights, target_kurtosis=1.8):
     std = weights.std()
     kurtosis = ((weights - mean) ** 4).mean() / (std ** 4)
     return (kurtosis - target_kurtosis) ** 2
+
+
+# 6) Pseudo-Quantization Noise (APQN)
+# Source: https://arxiv.org/abs/2206.10844
+
+def add_pseudo_quantization_noise(weights, delta):
+    noise = torch.empty_like(weights).uniform_(-delta / 2, delta / 2)
+    return weights + noise
+
+# 7) Quantize weights using Straight-Through Estimator (STE) for QAT
+# Source: https://arxiv.org/abs/2206.10844
+
+def quantize_ste(weights, step_size, min_val, max_val):
+    quantized = torch.clamp((weights / step_size).round(), min_val, max_val)
+    return quantized * step_size
+
+# 8) Multi-Bit Quantization (MQAT)
+# Source: https://arxiv.org/abs/2206.10844
+
+def quantize_multi_bit(weights, bit_width):
+    step_size = (weights.max() - weights.min()) / (2 ** bit_width - 1)
+    quantized = torch.clamp((weights / step_size).round(), -(2 ** (bit_width - 1)), (2 ** (bit_width - 1)) - 1)
+    return quantized * step_size
