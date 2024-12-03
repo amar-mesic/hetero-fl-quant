@@ -65,7 +65,7 @@ class ClientResources:
 
 
 class Client:
-    def __init__(self, id, resources: ClientResources, dataset, batch_size=32):
+    def __init__(self, id, resources: ClientResources, dataset, dataloader, val_loader):
         """
         Initialize a Client object.
 
@@ -80,7 +80,8 @@ class Client:
         self.resources = resources
 
         self.dataset = dataset
-        self.dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        self.dataloader = dataloader
+        self.val_loader = val_loader
 
     def train(self, global_model, epochs=1):
         """
