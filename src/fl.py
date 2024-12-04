@@ -55,6 +55,5 @@ def client_selection_with_constraints(client_resources, deadline):
 
     return selected_clients
 
-
 def select_indices(n, k):
     return random.sample(range(n), k)

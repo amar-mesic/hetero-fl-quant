@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 import random
 import fl
 from models import *
-
+from quantization import *
 
 
 @dataclass
@@ -38,7 +38,6 @@ class ClientResources:
 
 
 
-    
     @staticmethod
     def generate_random(dataset_size_range=(500, 2000)):
         """
@@ -77,7 +76,7 @@ class Client:
         self.dataloader = dataloader
         self.val_loader = val_loader
 
-    def train(self, global_model, epochs=1, lr=0.001, quantize=False, lambda_kure=0.0, delta=0.0, setup='standard'):
+    def train(self, global_model, epochs=1, lr=0.001, quantize=False, lambda_kure=0.0, delta=0.0, setup='standard', bit_widths=[32]):
         """
         Train the global model on the client's local dataset using Adam optimizer.
 
@@ -108,7 +107,7 @@ class Client:
             # learning hyperparameters can be set later
             # betas=(0.9, 0.99), 
             # eps=1e-7, 
-            # weight_decay=1e-4
+            weight_decay=1e-4
         )
         
         # Simulate training delay based on speed_factor
@@ -120,13 +119,13 @@ class Client:
                 if setup == 'mqat':
                     # Apply Pseudo-Quantization Noise (APQN)
                     if delta is not None:
-                        for param in model.parameters():
+                        for param in local_model.parameters():
                             param.data = add_pseudo_quantization_noise(param, delta)
 
                     # Apply Multi-Bit Quantization (MQAT)
                     if bit_widths is not None:
                         bit_width = random.choice(bit_widths)
-                        for param in model.parameters():
+                        for param in local_model.parameters():
                             param.data = quantize_multi_bit(param, bit_width)
 
                 outputs = local_model(inputs)
@@ -139,20 +138,17 @@ class Client:
 
                 loss.backward()
                 optimizer.step()
-                
-                ###
                 total_loss += loss.item()
                 num_batches += 1
-                ### 
 
         end_time = time.time()
         time_elapsed = end_time - start_time
-        # print(f"Training round complete in {time_elapsed:.2f}: seconds")
+        #print(f"Training round complete in {time_elapsed:.2f}: seconds")
 
         time.sleep((self.resources.speed_factor - 1) * time_elapsed)
         end_time = time.time()
         time_elapsed = end_time - start_time
-        # print(f"Client simulated to take {time_elapsed:.2f} seconds for training")
+        #print(f"Client simulated to take {time_elapsed:.2f} seconds for training")
 
         # Return updated model parameters
         avg_loss = total_loss / num_batches if num_batches > 0 else 0
