@@ -5,7 +5,7 @@ import numpy as np
 from quantization import scalar_quantize
 
 # Can this be simplified to only return a dictionary that is the average of client states?
-def federated_averaging(global_model, client_states, setting="standard"):
+def federated_averaging(global_model, client_states, setup="standard"):
     
     # Initialize a dictionary to store averaged weights
     averaged_state = global_model.state_dict()
@@ -16,33 +16,7 @@ def federated_averaging(global_model, client_states, setting="standard"):
 
         # Compute the average of the weights for each layer
         try:
-            if(setting in ["standard", "kure", "mqat"]):
-                # Standard quantization
-                averaged_state[key] = torch.mean(torch.stack([client_state[key] for client_state in client_states]), dim=0)
-                
-            elif setting == "scalar":
-                # Scalar quantization and averaging
-                quantized_updates = []
-                scale_list = []
-                zero_point_list = []
-
-                for client_state in client_states:
-                    quantized, scale, zero_point = scalar_quantize(client_state[key].numpy())
-                    quantized_updates.append(torch.tensor(quantized, dtype=torch.float32))  # Convert to float32 for mean
-                    scale_list.append(scale)
-                    zero_point_list.append(zero_point)
-
-                # Calculate average quantized weights
-                avg_quantized = torch.mean(torch.stack(quantized_updates), dim=0).to(torch.int8)  # Convert back to int8
-
-                # Use the average scale and zero-point for dequantization if needed
-                avg_scale = sum(scale_list) / len(scale_list)
-                avg_zero_point = sum(zero_point_list) / len(zero_point_list)
-
-                # Store quantized weights
-                averaged_state[key] = avg_quantized
-            else:
-                pass
+            averaged_state[key] = torch.mean(torch.stack([client_state[key] for client_state in client_states]), dim=0)
 
         except KeyError:
             print(f"Warning: Key {key} not found in one or more client states. Skipping.")

@@ -6,6 +6,7 @@ import time
 from dataclasses import dataclass, field
 import random
 import fl
+from models import *
 
 
 
@@ -57,13 +58,6 @@ class ClientResources:
             GPU_memory_availability=random.uniform(0, 32) if GPU_available else 0,  # GPU memory if available
         )
 
-
-
-
-
-
-
-
 class Client:
     def __init__(self, id, resources: ClientResources, dataset, dataloader, val_loader):
         """
@@ -83,7 +77,7 @@ class Client:
         self.dataloader = dataloader
         self.val_loader = val_loader
 
-    def train(self, global_model, epochs=1):
+    def train(self, global_model, epochs=1, lr=0.001, quantize=False, lambda_kure=0.0, delta=0.0, setup='standard'):
         """
         Train the global model on the client's local dataset using Adam optimizer.
 
@@ -95,17 +89,22 @@ class Client:
         - state_dict (dict): The updated model parameters.
         """
         # track start time
+        total_loss = 0
+        num_batches = 0
         start_time = time.time()
 
         # Directly copy the global model
-        local_model = fl.create_model()
+        local_model = QuantStubModel(q=quantize)
+        if(quantize):
+            local_model.qconfig = torch.quantization.get_default_qat_qconfig("fbgemm")
+            torch.quantization.prepare_qat(local_model, inplace=True)
         local_model.load_state_dict(global_model.state_dict())
         
         # Define the loss function and optimizer
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(
             local_model.parameters(), 
-            lr=0.001, 
+            lr=lr, 
             # learning hyperparameters can be set later
             # betas=(0.9, 0.99), 
             # eps=1e-7, 
@@ -117,21 +116,45 @@ class Client:
         for epoch in range(epochs):
             for inputs, labels in self.dataloader:
                 optimizer.zero_grad()
+
+                if setup == 'mqat':
+                    # Apply Pseudo-Quantization Noise (APQN)
+                    if delta is not None:
+                        for param in model.parameters():
+                            param.data = add_pseudo_quantization_noise(param, delta)
+
+                    # Apply Multi-Bit Quantization (MQAT)
+                    if bit_widths is not None:
+                        bit_width = random.choice(bit_widths)
+                        for param in model.parameters():
+                            param.data = quantize_multi_bit(param, bit_width)
+
                 outputs = local_model(inputs)
                 loss = criterion(outputs, labels)
+
+                # Kurtosis Regularization
+                if setup == 'kure':
+                    for param in local_model.parameters():
+                        loss += lambda_kure * kurtosis_regularization(param)
+
                 loss.backward()
                 optimizer.step()
-
+                
+                ###
+                total_loss += loss.item()
+                num_batches += 1
+                ### 
 
         end_time = time.time()
         time_elapsed = end_time - start_time
-        print(f"Training round complete in {time_elapsed:.2f}: seconds")
+        # print(f"Training round complete in {time_elapsed:.2f}: seconds")
 
         time.sleep((self.resources.speed_factor - 1) * time_elapsed)
         end_time = time.time()
         time_elapsed = end_time - start_time
-        print(f"Client simulated to take {time_elapsed:.2f} seconds for training")
+        # print(f"Client simulated to take {time_elapsed:.2f} seconds for training")
 
         # Return updated model parameters
-        return local_model.state_dict()
+        avg_loss = total_loss / num_batches if num_batches > 0 else 0
+        return local_model.state_dict(), avg_loss
     
