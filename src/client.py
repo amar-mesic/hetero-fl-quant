@@ -57,6 +57,13 @@ class ClientResources:
             GPU_memory_availability=random.uniform(0, 32) if GPU_available else 0,  # GPU memory if available
         )
 
+    def get_slowdown_factor(self):
+        """
+        Get the slowdown factor for the client.
+        """
+        speed_slowdown = self.speed_factor - 1
+        return speed_slowdown
+
 class Client:
     def __init__(self, id, resources: ClientResources, dataset, dataloader, val_loader):
         """
@@ -145,7 +152,9 @@ class Client:
         time_elapsed = end_time - start_time
         #print(f"Training round complete in {time_elapsed:.2f}: seconds")
 
-        time.sleep((self.resources.speed_factor - 1) * time_elapsed)
+        # time.sleep((self.resources.speed_factor - 1) * time_elapsed)
+        time.sleep(self.resources.get_slowdown_factor() * time_elapsed)
+
         end_time = time.time()
         time_elapsed = end_time - start_time
         #print(f"Client simulated to take {time_elapsed:.2f} seconds for training")
