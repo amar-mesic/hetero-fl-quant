@@ -1,0 +1,20 @@
+import os, sys
+import numpy as np
+from scipy.spatial import distance
+
+current_path = os.getcwd()
+sys.path.append(current_path)
+
+from src.model import *
+
+# Example usage
+lattice_points = np.array([[0, 0], [1, 1], [0, 1], [1, 0]])  # Example lattice (2D for simplicity)
+weights = np.random.rand(5, 2)  # Example weights (2D)
+
+# Quantize weights
+quantized_weights = lattice_quantize(weights, lattice_points)
+
+# Print inputs and outputs
+print("\nLattice Quantization Example")
+print("Input Weights:", weights)
+print("Quantized Weights:", quantized_weights)

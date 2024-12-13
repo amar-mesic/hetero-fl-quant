@@ -1,0 +1,20 @@
+import os, sys
+import numpy as np
+from scipy.spatial import distance
+
+current_path = os.getcwd()
+sys.path.append(current_path)
+
+from src.model import *
+
+# Example usage
+weights = np.random.rand(3)  # Example weights
+
+# Quantize weights
+quantized, scale, min_val = probabilistic_quantize(weights)
+
+# Print inputs and outputs
+print("\nProbabilistic Quantization Example")
+print("Input Weights:", weights)
+print("Quantized Weights:", quantized)
+print("Scale:", scale, "Min Value:", min_val)

@@ -1,0 +1,21 @@
+import os, sys
+import numpy as np
+
+current_path = os.getcwd()
+sys.path.append(current_path)
+
+from src.model import scalar_dequantize, scalar_quantize
+
+# Example usage
+model_weights = np.random.rand(3)
+quantized, scale, min_val = scalar_quantize(model_weights)
+
+# Print inputs and outputs
+print("Scalar Quantization Example")
+print("Input Weights:", model_weights)
+print("Quantized Weights:", quantized)
+print("Scale:", scale, "Min Value:", min_val)
+
+dequantized_weights = scalar_dequantize(quantized, scale, min_val)
+
+print("Dequantized Weights:", dequantized_weights)
