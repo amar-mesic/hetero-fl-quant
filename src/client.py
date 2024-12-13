@@ -57,12 +57,42 @@ class ClientResources:
             GPU_memory_availability=random.uniform(0, 32) if GPU_available else 0,  # GPU memory if available
         )
 
+
     def get_slowdown_factor(self):
-        """
-        Get the slowdown factor for the client.
-        """
-        speed_slowdown = self.speed_factor - 1
-        return speed_slowdown
+    """
+    Calculate the slowdown factor for the client based on battery level,
+    CPU/GPU availability, and other attributes.
+    """
+    # Battery level-based slowdown
+    if self.battery_level > 50:
+        battery_slowdown = 1.0  # Full speed
+    elif 20 <= self.battery_level <= 50:
+        battery_slowdown = 0.5  # Half speed
+    else:
+        battery_slowdown = 0.0  # No processing
+
+    # Processing availability-based slowdown
+    if self.GPU_available:
+        processing_slowdown = 1.0 * GPU_memory_availability / 32  # Full speed with GPU
+    elif self.CPU_available:
+        processing_slowdown = 0.3 * self.CPU_memory_availability / 128 # Reduced speed with only CPU
+    else:
+        processing_slowdown = 0.0  # No processing available
+
+    # Bandwidth influence (optional): Assume speed reduces slightly with lower bandwidth
+    bandwidth_slowdown = max(0.5, min(1.0, self.bandwidth / 100))
+
+    # Combine all slowdown factors
+    total_slowdown = battery_slowdown * processing_slowdown * bandwidth_slowdown
+
+    # Apply speed_factor for additional adjustments
+    adjusted_speed = self.speed_factor * total_slowdown
+
+    return adjusted_speed
+
+
+
+
 
 class Client:
     def __init__(self, id, resources: ClientResources, dataset, dataloader, val_loader):
