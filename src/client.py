@@ -59,36 +59,36 @@ class ClientResources:
 
 
     def get_slowdown_factor(self):
-    """
-    Calculate the slowdown factor for the client based on battery level,
-    CPU/GPU availability, and other attributes.
-    """
-    # Battery level-based slowdown
-    if self.battery_level > 50:
-        battery_slowdown = 1.0  # Full speed
-    elif 20 <= self.battery_level <= 50:
-        battery_slowdown = 0.5  # Half speed
-    else:
-        battery_slowdown = 0.0  # No processing
+        """
+        Calculate the slowdown factor for the client based on battery level,
+        CPU/GPU availability, and other attributes.
+        """
+        # Battery level-based slowdown
+        if self.battery_level > 50:
+            battery_slowdown = 1.0  # Full speed
+        elif 20 <= self.battery_level <= 50:
+            battery_slowdown = 0.5  # Half speed
+        else:
+            battery_slowdown = 0.0  # No processing
 
-    # Processing availability-based slowdown
-    if self.GPU_available:
-        processing_slowdown = 1.0 * GPU_memory_availability / 32  # Full speed with GPU
-    elif self.CPU_available:
-        processing_slowdown = 0.3 * self.CPU_memory_availability / 128 # Reduced speed with only CPU
-    else:
-        processing_slowdown = 0.0  # No processing available
+        # Processing availability-based slowdown
+        if self.GPU_available:
+            processing_slowdown = 1.0 * self.GPU_memory_availability / 32  # Full speed with GPU
+        elif self.CPU_available:
+            processing_slowdown = 0.3 * self.CPU_memory_availability / 128 # Reduced speed with only CPU
+        else:
+            processing_slowdown = 0.0  # No processing available
 
-    # Bandwidth influence (optional): Assume speed reduces slightly with lower bandwidth
-    bandwidth_slowdown = max(0.5, min(1.0, self.bandwidth / 100))
+        # Bandwidth influence (optional): Assume speed reduces slightly with lower bandwidth
+        bandwidth_slowdown = max(0.5, min(1.0, self.bandwidth / 100))
 
-    # Combine all slowdown factors
-    total_slowdown = battery_slowdown * processing_slowdown * bandwidth_slowdown
+        # Combine all slowdown factors
+        total_slowdown = battery_slowdown * processing_slowdown * bandwidth_slowdown
 
-    # Apply speed_factor for additional adjustments
-    adjusted_speed = self.speed_factor * total_slowdown
+        # Apply speed_factor for additional adjustments
+        adjusted_speed = self.speed_factor * total_slowdown
 
-    return adjusted_speed
+        return adjusted_speed
 
 
 
