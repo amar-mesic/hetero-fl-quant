@@ -23,6 +23,7 @@ This project addresses these challenges by incorporating **quantization techniqu
 ## Features
 
 - **Simulated FL Environment**: The project includes a simplified FL setup in `parallel_fedcs.ipynb`, which trains a model on five clients using the MNIST dataset.
+- **Simulated Clients**: In `src/client.py` we create clients and simulate their heterogeneity.
 - **Quantization Techniques**: Implements quantization methods such as:
   - **int8 Quantization** for efficient inference and reduced model size.
   - **Kurtosis Regularization (KURE)** to make weights more robust to quantization.

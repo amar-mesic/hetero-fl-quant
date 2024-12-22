@@ -12,6 +12,67 @@ from quantization import *
 
 @dataclass
 class ClientResources:
+    """
+    A dataclass representing the computational and resource capabilities of a simulated client
+    in a federated learning environment. This class is designed to model client heterogeneity
+    by including various attributes related to processing speed, power levels, memory, and network bandwidth.
+
+    Attributes:
+        speed_factor (float): 
+            A multiplier representing the client's processing speed relative to a baseline.
+            Higher values indicate faster processing.
+        
+        battery_level (float): 
+            The current battery level of the client as a percentage (0.0 to 100.0).
+            Used to simulate throttling or resource limitations based on power availability.
+        
+        bandwidth (float): 
+            The network bandwidth available to the client, measured in Mbps.
+            Impacts the time required for model upload and download.
+        
+        dataset_size (int): 
+            The size of the local dataset available to the client, measured in the number of samples.
+            Larger datasets may increase the time required for local model updates.
+        
+        CPU_available (bool): 
+            A flag indicating whether the client has a CPU available for computation.
+            If False, the client cannot perform local updates.
+        
+        CPU_memory_availability (float): 
+            The amount of available memory (in GB) on the client's CPU.
+            Determines whether the client can handle memory-intensive computations.
+        
+        GPU_available (bool): 
+            A flag indicating whether the client has a GPU available for computation.
+            If True, the client is expected to process faster compared to CPU-only clients.
+        
+        GPU_memory_availability (float): 
+            The amount of available memory (in GB) on the client's GPU.
+            Critical for handling large models or datasets during training.
+
+    Example:
+        >>> client = ClientResources(
+        ...     speed_factor=2.5,
+        ...     battery_level=75.0,
+        ...     bandwidth=50.0,
+        ...     dataset_size=10000,
+        ...     CPU_available=True,
+        ...     CPU_memory_availability=16.0,
+        ...     GPU_available=True,
+        ...     GPU_memory_availability=8.0,
+        ... )
+        >>> print(client)
+        ClientResources(
+            speed_factor=2.5,
+            battery_level=75.0,
+            bandwidth=50.0,
+            dataset_size=10000,
+            CPU_available=True,
+            CPU_memory_availability=16.0,
+            GPU_available=True,
+            GPU_memory_availability=8.0
+        )
+    """
     speed_factor: float
     battery_level: float
     bandwidth: float
@@ -20,6 +81,7 @@ class ClientResources:
     CPU_memory_availability: float
     GPU_available: bool
     GPU_memory_availability: float
+
 
     def __post_init__(self):
         # Validation logic
